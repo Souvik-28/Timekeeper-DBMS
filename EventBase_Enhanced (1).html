@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventBase — Sports Analytics Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #06080f;
+  --bg2:       #0a0e1a;
+  --bg3:       #0f1422;
+  --bg4:       #151c2e;
+  --bg5:       #1b2238;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --border3:   rgba(255,255,255,0.22);
+  --text:      #eceef5;
+  --text2:     #7d88a0;
+  --text3:     #404b5e;
+  --blue:      #4f8ef8;
+  --blue2:     #74aeff;
+  --cyan:      #00e5c8;
+  --amber:     #ffb800;
+  --green:     #00e676;
+  --red:       #ff4f6a;
+  --purple:    #b06ef8;
+  --pink:      #ff5fb3;
+  --orange:    #ff7c3e;
+  --teal:      #00c2b3;
+  --font-head: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --r:         8px;
+  --r2:        14px;
+  --r3:        20px;
+  --shadow:    0 8px 40px rgba(0,0,0,0.7);
+  --shadow2:   0 2px 12px rgba(0,0,0,0.5);
+  --grad-main: linear-gradient(135deg,#4f8ef8,#00e5c8);
+  --grad-purple: linear-gradient(135deg,#b06ef8,#ff5fb3);
+  --grad-warm: linear-gradient(135deg,#ff7c3e,#ffb800);
+  --grad-green: linear-gradient(135deg,#00e676,#00c2b3);
+}
+html { font-size: 14px; scroll-behavior: smooth; }
+/* body defined below in event logo section */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg5); border-radius: 4px; }
+
+/* ── Layout ── */
+.layout { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0e1a 0%, #080c16 100%);
+  border-right: 1px solid rgba(79,142,248,0.15);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+}
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(79,142,248,0.12);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg,rgba(79,142,248,0.08),rgba(0,229,200,0.05));
+}
+.logo-icon {
+  width: 34px; height: 34px;
+  background: var(--grad-main);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(79,142,248,0.5);
+}
+.logo-text .wordmark {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.logo-text .wordmark span { color: var(--blue2); }
+.logo-text .tagline {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sidebar-section {
+  padding: 18px 16px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin: 1px 8px;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  width: calc(100% - 16px);
+  text-align: left;
+  font-family: var(--font-body);
+}
+.nav-item .nav-icon {
+  width: 30px; height: 30px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg3);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.nav-item .nav-icon svg { width: 15px; height: 15px; opacity: 0.6; transition: opacity 0.15s; }
+.nav-item:hover { color: var(--text); }
+.nav-item:hover .nav-icon { background: var(--bg4); }
+.nav-item:hover .nav-icon svg { opacity: 1; }
+.nav-item.active { color: var(--blue2); background: linear-gradient(90deg,rgba(79,142,248,0.12),transparent); border-left: 2px solid var(--blue); margin-left: 6px; padding-left: 8px; }
+.nav-item.active .nav-icon { background: rgba(79,142,248,0.2); border: 1px solid rgba(79,142,248,0.35); }
+.nav-item.active .nav-icon svg { opacity: 1; color: var(--blue2); stroke: var(--blue2); }
+.nav-badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(75,139,245,0.15);
+  color: var(--blue2);
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+}
+.stats-mini {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stats-mini-item { text-align: center; }
+.stats-mini-val { font-family: var(--font-head); font-size: 16px; font-weight: 700; color: var(--text); }
+.stats-mini-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+
+/* ── Main ── */
+.main {
+  margin-left: 240px;
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Topbar ── */
+.topbar {
+  padding: 14px 28px;
+  background: rgba(10,14,26,0.95);
+  border-bottom: 1px solid rgba(79,142,248,0.12);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-title small {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 400;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--r);
+  font-size: 12.5px; font-family: var(--font-body); font-weight: 500;
+  cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap;
+}
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.btn-ghost { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border3); }
+.btn-primary { background: var(--grad-main); color: #fff; box-shadow: 0 4px 16px rgba(79,142,248,0.4); border: none; }
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(79,142,248,0.55); }
+.btn-success { background: rgba(40,217,122,0.15); color: var(--green); border: 1px solid rgba(40,217,122,0.25); }
+.btn-success:hover { background: rgba(40,217,122,0.25); }
+.btn-danger { background: rgba(245,95,95,0.1); color: var(--red); border: 1px solid rgba(245,95,95,0.2); }
+.btn-danger:hover { background: rgba(245,95,95,0.2); }
+.btn-cyan { background: rgba(45,226,200,0.12); color: var(--cyan); border: 1px solid rgba(45,226,200,0.2); }
+.btn-cyan:hover { background: rgba(45,226,200,0.22); }
+.btn-sm { padding: 5px 10px; font-size: 11.5px; border-radius: 6px; }
+.btn-icon { padding: 7px; border-radius: 7px; }
+
+/* ── Content ── */
+.content { padding: 22px 28px; flex: 1; }
+
+/* ── Panels ── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.22s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Section headers ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  border-radius: 3px;
+  background: var(--grad-main);
+  display: block;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 18px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* ── Metric Cards ── */
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.metric-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, border-color 0.15s;
+  cursor: default;
+}
+.metric-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+.metric-glow {
+  position: absolute; top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: 0.08;
+  filter: blur(20px);
+}
+.metric-card.c1 .metric-glow { background: var(--blue); }
+.metric-card.c2 .metric-glow { background: var(--cyan); }
+.metric-card.c3 .metric-glow { background: var(--amber); }
+.metric-card.c4 .metric-glow { background: var(--green); }
+.metric-card .mval {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.metric-card.c1 { border-top: 2px solid var(--blue); }
+.metric-card.c2 { border-top: 2px solid var(--cyan); }
+.metric-card.c3 { border-top: 2px solid var(--amber); }
+.metric-card.c4 { border-top: 2px solid var(--green); }
+.metric-card.c1 .mval { color: var(--blue2); }
+.metric-card.c2 .mval { color: var(--cyan); }
+.metric-card.c3 .mval { color: var(--amber); }
+.metric-card.c4 .mval { color: var(--green); }
+.metric-card .mlbl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+.metric-card .mtrend { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+/* ── Charts ── */
+.charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; margin-bottom: 18px; }
+.chart-wrap { position: relative; width: 100%; height: 200px; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  padding: 9px 13px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.td-athlete { font-weight: 600; color: var(--blue2) !important; cursor: pointer; }
+.td-athlete:hover { text-decoration: underline; }
+
+/* ── Tags / Badges ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+.tag-blue   { background: rgba(75,139,245,0.12);  color: #7aafff; border: 1px solid rgba(75,139,245,0.2); }
+.tag-green  { background: rgba(40,217,122,0.12);  color: #5ddf9a; border: 1px solid rgba(40,217,122,0.2); }
+.tag-amber  { background: rgba(245,181,63,0.12);  color: #f5c36b; border: 1px solid rgba(245,181,63,0.2); }
+.tag-red    { background: rgba(245,95,95,0.12);   color: #f78080; border: 1px solid rgba(245,95,95,0.2); }
+.tag-cyan   { background: rgba(45,226,200,0.12);  color: #6eeedd; border: 1px solid rgba(45,226,200,0.2); }
+.tag-purple { background: rgba(155,110,247,0.12); color: #b89cf7; border: 1px solid rgba(155,110,247,0.2); }
+.year-chip {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10.5px; font-weight: 600;
+  background: var(--bg4);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+
+/* ── Forms ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.form-row { display: flex; flex-direction: column; gap: 5px; }
+.form-row label { font-size: 11.5px; color: var(--text2); font-weight: 500; }
+.form-row .req { color: var(--red); }
+input[type=text], input[type=number], select, textarea {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 8px 11px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(75,139,245,0.12);
+}
+select option { background: var(--bg3); }
+textarea { resize: vertical; }
+input::placeholder { color: var(--text3); }
+
+/* ── Search row ── */
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.search-row input { flex: 1; min-width: 160px; }
+.search-row select { min-width: 120px; width: auto; }
+.search-wrap { position: relative; flex: 1; min-width: 180px; }
+.search-wrap input { padding-left: 34px; }
+.search-wrap .si {
+  position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Notification ── */
+.notif {
+  padding: 10px 14px;
+  border-radius: var(--r);
+  font-size: 12.5px;
+  margin-bottom: 14px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  animation: fadeUp 0.2s;
+}
+.notif.show { display: flex; }
+.notif-success { background: rgba(40,217,122,0.08); border: 1px solid rgba(40,217,122,0.18); color: var(--green); }
+.notif-error   { background: rgba(245,95,95,0.08);  border: 1px solid rgba(245,95,95,0.18);  color: var(--red); }
+.notif-info    { background: rgba(75,139,245,0.08); border: 1px solid rgba(75,139,245,0.18); color: var(--blue2); }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r3);
+  padding: 26px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: modalIn 0.22s ease;
+  box-shadow: var(--shadow);
+}
+.modal-box.wide  { max-width: 740px; }
+.modal-box.wider { max-width: 920px; }
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.modal-head h2 { font-family: var(--font-head); font-size: 17px; font-weight: 700; }
+.modal-head p  { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.modal-close {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.modal-close:hover { background: var(--bg4); color: var(--text); }
+
+/* ── Upload Zone ── */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--r2);
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg3);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--blue); background: rgba(75,139,245,0.05); }
+.upload-zone .uz-icon { font-size: 40px; margin-bottom: 10px; }
+.upload-zone h3 { font-family: var(--font-head); font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+.upload-zone p  { font-size: 11.5px; color: var(--text3); }
+.ext-badges { display: flex; justify-content: center; gap: 5px; margin-top: 10px; }
+.ext-badge {
+  padding: 3px 9px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--text2);
+  font-weight: 600;
+}
+
+/* Multi-file upload styles */
+.upload-mode-tabs { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 16px; }
+.upload-mode-tab {
+  flex: 1; padding: 8px 12px; text-align: center; cursor: pointer;
+  font-size: 12px; font-weight: 500; color: var(--text3);
+  background: var(--bg3); border: none; font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.upload-mode-tab.active { background: var(--bg4); color: var(--blue2); }
+
+/* ── Year tag in import ── */
+.year-assign {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.year-assign .ya-name { flex: 1; font-weight: 500; font-size: 12.5px; }
+.year-assign select { width: auto; min-width: 100px; }
+.year-assign .ya-remove { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; }
+.year-assign .ya-remove:hover { color: var(--red); }
+
+/* ── Athlete Grid ── */
+.ath-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.ath-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.ath-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad-main);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.ath-card:hover { border-color: var(--border2); background: var(--bg3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.ath-card:hover::after { opacity: 1; }
+
+.ath-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(75,139,245,0.25), rgba(45,226,200,0.25));
+  border: 1.5px solid rgba(75,139,245,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 14px; font-weight: 700;
+  color: var(--blue2);
+  margin-bottom: 10px;
+}
+.ath-card-name { font-family: var(--font-head); font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
+.ath-card-meta { font-size: 11px; color: var(--text3); }
+.ath-card-footer { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 3px; }
+.ath-card-trend { margin-top: 8px; font-size: 10px; color: var(--green); }
+
+/* ── Athlete Modal ── */
+.ath-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--bg3);
+  border-radius: var(--r);
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+}
+.ath-modal-avatar {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(75,139,245,0.3), rgba(45,226,200,0.3));
+  border: 2px solid var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  color: var(--blue2); flex-shrink: 0;
+}
+.ath-modal-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.ath-modal-meta { font-size: 11.5px; color: var(--text3); margin-top: 4px; }
+.ath-modal-stats { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.ath-stat-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 9px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.ath-stat-pill b { color: var(--text); }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  padding: 8px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--text3);
+  border: none; background: none;
+  font-family: var(--font-body); font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active { color: var(--blue2); border-bottom-color: var(--blue); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp 0.2s; }
+
+/* ── PB rows ── */
+.pb-list { display: flex; flex-direction: column; gap: 8px; }
+.pb-item {
+  display: flex; align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 11px 14px;
+  gap: 12px;
+  transition: border-color 0.15s;
+}
+.pb-item:hover { border-color: var(--border2); }
+.pb-event { flex: 1; }
+.pb-event-name { font-weight: 600; font-size: 13px; }
+.pb-event-type { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+.pb-years { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 3px; }
+.pb-best { text-align: right; }
+.pb-val { font-family: var(--font-head); font-size: 20px; font-weight: 800; color: var(--cyan); }
+.pb-meta { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+.pb-badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 9.5px; background: rgba(45,226,200,0.12); color: var(--cyan); border: 1px solid rgba(45,226,200,0.2); margin-left: 4px; }
+
+/* ── Progress Timeline ── */
+.progress-timeline { display: flex; flex-direction: column; gap: 10px; }
+.pt-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3); border-radius: var(--r);
+  border: 1px solid var(--border);
+}
+.pt-year { font-family: var(--font-head); font-weight: 700; font-size: 13px; color: var(--amber); min-width: 36px; }
+.pt-bar-wrap { flex: 1; height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.pt-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.pt-value { font-weight: 700; font-size: 13px; min-width: 60px; text-align: right; }
+.pt-delta { font-size: 10.5px; min-width: 50px; text-align: right; }
+
+/* ── Compare ── */
+.compare-controls {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.compare-controls .cc-group { display: flex; flex-direction: column; gap: 4px; }
+.compare-controls label { font-size: 10.5px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.compare-controls select { min-width: 140px; width: auto; }
+.vs-badge {
+  padding: 5px 14px;
+  background: rgba(245,181,63,0.12);
+  color: var(--amber);
+  border: 1px solid rgba(245,181,63,0.22);
+  border-radius: 20px;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  align-self: flex-end;
+  margin-bottom: 1px;
+}
+
+/* ── Comparison Result Cards ── */
+.cmp-summary-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.cmp-sum-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  text-align: center;
+}
+.cmp-sum-num { font-family: var(--font-head); font-size: 22px; font-weight: 800; }
+.cmp-sum-lbl { font-size: 10.5px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── Tally ── */
+.tally-result {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: border-color 0.15s;
+}
+.tally-result:hover { border-color: var(--border2); }
+.tally-result-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.tally-result-body { padding: 0; }
+
+/* ── Sparkline ── */
+.sparkline-wrap { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; }
+.spark-bar { display: inline-block; width: 4px; border-radius: 2px; background: var(--blue); transition: height 0.4s; }
+
+/* ── Change indicators ── */
+.change-up   { color: var(--green); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+.change-down { color: var(--red);   font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+.change-flat { color: var(--text3); font-size: 11px; }
+
+/* ── Empty states ── */
+.empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text3);
+}
+.empty .empty-icon { font-size: 44px; margin-bottom: 12px; opacity: 0.25; }
+.empty h3 { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+.empty p  { font-size: 12px; }
+
+/* ── Misc ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+code { background: var(--bg3); padding: 1px 5px; border-radius: 4px; font-size: 11px; border: 1px solid var(--border2); }
+.del-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.del-btn:hover { background: rgba(245,95,95,0.12); color: var(--red); border-color: rgba(245,95,95,0.25); }
+.import-ok {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: rgba(40,217,122,0.06);
+  border: 1px solid rgba(40,217,122,0.18);
+  border-radius: var(--r);
+  font-size: 12.5px;
+  color: var(--green);
+  margin-bottom: 12px;
+}
+
+/* ── Divider with label ── */
+.divider-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 10.5px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin: 14px 0;
+}
+.divider-label::before, .divider-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Rank badge ── */
+.rank-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 10px; font-weight: 700;
+  background: var(--bg4);
+  color: var(--text3);
+}
+.rank-badge.r1 { background: rgba(245,181,63,0.2); color: var(--amber); }
+.rank-badge.r2 { background: rgba(160,160,160,0.2); color: #aaa; }
+.rank-badge.r3 { background: rgba(160,120,80,0.2); color: #c9915a; }
+
+/* ── Progress bar ── */
+.progress-bar-wrap { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.progress-bar { height: 100%; border-radius: 2px; background: var(--grad-main); }
+
+/* ── DB Status bar ── */
+.db-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10.5px; color: var(--text3);
+  padding: 4px 10px;
+  background: rgba(0,229,200,0.04);
+  border-radius: 20px;
+  border: 1px solid rgba(0,229,200,0.12);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.db-status:hover { border-color: rgba(0,229,200,0.25); color: var(--cyan); }
+.db-status .db-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse-db 2s infinite;
+}
+.db-status .db-dot.offline { background: var(--text3); box-shadow: none; animation: none; }
+@keyframes pulse-db { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── Event Logo Panel ── */
+.event-logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap: 12px;
+}
+.event-logo-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.event-logo-card:hover { border-color: var(--blue); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,142,248,0.2); }
+.event-logo-card.has-logo { border-color: rgba(0,229,200,0.25); }
+.event-logo-img {
+  width: 72px; height: 72px;
+  border-radius: 12px;
+  object-fit: contain;
+  margin: 0 auto 8px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.event-logo-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+.event-logo-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; word-break: break-word; }
+.event-logo-type { font-size: 10px; color: var(--text3); }
+.event-logo-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: center; }
+.logo-upload-hint {
+  position: absolute; inset: 0;
+  background: rgba(79,142,248,0.12);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; font-size: 11px; color: var(--blue2);
+  opacity: 0; transition: opacity 0.2s;
+  border-radius: var(--r2);
+}
+.event-logo-card:hover .logo-upload-hint { opacity: 1; }
+
+/* ── Color scheme badges for events ── */
+.event-scheme {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 20px; font-weight: 600;
+}
+
+/* ── Body background subtle animated gradient ── */
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(79,142,248,0.04) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 20%, rgba(0,229,200,0.03) 0%, transparent 50%),
+                    radial-gradient(ellipse at 60% 80%, rgba(176,110,248,0.03) 0%, transparent 50%);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sidebar { width: 56px; }
+  .sidebar .wordmark, .sidebar .tagline, .sidebar-section,
+  .nav-item span, .nav-badge, .sidebar-bottom { display: none; }
+  .nav-item { justify-content: center; }
+  .nav-item .nav-icon { margin: 0 auto; }
+  .main { margin-left: 56px; }
+  .metrics-row { grid-template-columns: 1fr 1fr; }
+  .charts-row  { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .metrics-row { grid-template-columns: 1fr; }
+  .content { padding: 14px; }
+  .topbar { padding: 10px 14px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .cmp-summary-cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏆</div>
+    <div class="logo-text">
+      <div class="wordmark">Event<span>Base</span></div>
+      <div class="tagline">Sports Analytics</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Main</div>
+  <button class="nav-item active" onclick="switchPanel('dashboard', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
+    <span>Dashboard</span>
+  </button>
+  <button class="nav-item" onclick="switchPanel('events', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+    <span>All Records</span>
+    <span class="nav-badge" id="nav-count">0</span>
+  </button>
+  <button class="nav-item" onclick="switchPanel('athletes', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M17 11l2 2 4-4"/></svg></div>
+    <span>Athletes</span>
+  </button>
+
+  <div class="sidebar-section">Analysis</div>
+  <button class="nav-item" onclick="switchPanel('compare', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+    <span>Year Compare</span>
+  </button>
+  <button class="nav-item" onclick="switchPanel('tally', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    <span>Tally & Search</span>
+  </button>
+  <button class="nav-item" onclick="switchPanel('participant', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <span>Participant Tally</span>
+  </button>
+
+  <div class="sidebar-section">Branding</div>
+  <button class="nav-item" onclick="switchPanel('branding', this)">
+    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+    <span>Event Logos</span>
+    <span class="nav-badge" id="nav-logo-count" style="background:rgba(0,229,200,0.15);color:var(--cyan)">0</span>
+  </button>
+
+  <div class="sidebar-bottom">
+    <div class="stats-mini">
+      <div class="stats-mini-item">
+        <div class="stats-mini-val" id="sb-records">0</div>
+        <div class="stats-mini-lbl">Records</div>
+      </div>
+      <div class="stats-mini-item">
+        <div class="stats-mini-val" id="sb-athletes">0</div>
+        <div class="stats-mini-lbl">Athletes</div>
+      </div>
+    </div>
+    <button class="btn btn-danger btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="clearAllData()">
+      Clear All Data
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="tb-title">
+      Dashboard
+      <small id="tb-sub">Overview</small>
+    </div>
+    <div class="db-status" id="db-status-bar" title="IndexedDB — all data saved in your browser" onclick="showNotif('✓ Data is stored in your browser\'s IndexedDB — persists between sessions','info')">
+      <div class="db-dot" id="db-dot"></div>
+      <span id="db-status-text">Connecting…</span>
+    </div>
+    <button class="btn btn-ghost" onclick="downloadAllData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="btn btn-ghost" onclick="openModal('modal-import')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import
+    </button>
+    <button class="btn btn-primary" onclick="openModal('modal-add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Record
+    </button>
+  </div>
+
+  <div class="content">
+    <div id="notif" class="notif"></div>
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="metrics-row">
+        <div class="metric-card c1">
+          <div class="metric-glow"></div>
+          <div class="mval" id="m-events">0</div>
+          <div class="mlbl">Unique Events</div>
+        </div>
+        <div class="metric-card c2">
+          <div class="metric-glow"></div>
+          <div class="mval" id="m-athletes">0</div>
+          <div class="mlbl">Athletes</div>
+        </div>
+        <div class="metric-card c3">
+          <div class="metric-glow"></div>
+          <div class="mval" id="m-seasons">0</div>
+          <div class="mlbl">Seasons</div>
+        </div>
+        <div class="metric-card c4">
+          <div class="metric-glow"></div>
+          <div class="mval" id="m-total">0</div>
+          <div class="mlbl">Total Records</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Records per Event</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-events"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Records per Season</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-seasons"></canvas></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:18px" id="dash-extra-row">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Top Athletes by Records</div>
+          </div>
+          <div id="dash-top-athletes"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Event Type Breakdown</div>
+          </div>
+          <div class="chart-wrap" style="height:160px"><canvas id="chart-types"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Records</div>
+          <button class="btn btn-ghost btn-sm" onclick="switchPanel('events', document.querySelector('.nav-item:nth-child(4)'))">View All →</button>
+        </div>
+        <div id="dash-recent"></div>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="panel" id="panel-events">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="ev-search" placeholder="Search athlete, event, venue...">
+        </div>
+        <select id="ev-year" onchange="renderEvents()"><option value="">All years</option></select>
+        <select id="ev-type" onchange="renderEvents()"><option value="">All types</option></select>
+        <select id="ev-event" onchange="renderEvents()"><option value="">All events</option></select>
+      </div>
+      <div id="events-out"></div>
+    </div>
+
+    <!-- ATHLETES -->
+    <div class="panel" id="panel-athletes">
+      <div class="search-row">
+        <div class="search-wrap" style="flex:1">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="ath-search" placeholder="Search athlete...">
+        </div>
+        <select id="ath-filter-event" onchange="renderAthletes()"><option value="">All events</option></select>
+      </div>
+      <div id="athletes-out"></div>
+    </div>
+
+    <!-- YEAR COMPARE -->
+    <div class="panel" id="panel-compare">
+      <div class="compare-controls">
+        <div class="cc-group">
+          <label>Event</label>
+          <select id="cmp-event" onchange="renderCompare()"><option value="">Select event...</option></select>
+        </div>
+        <div class="cc-group">
+          <label>Year 1</label>
+          <select id="cmp-y1" onchange="renderCompare()"><option value="">—</option></select>
+        </div>
+        <span class="vs-badge">VS</span>
+        <div class="cc-group">
+          <label>Year 2</label>
+          <select id="cmp-y2" onchange="renderCompare()"><option value="">—</option></select>
+        </div>
+        <div class="cc-group" style="margin-left:auto">
+          <label>&nbsp;</label>
+          <button class="btn btn-ghost" id="btn-dl-compare" style="display:none" onclick="downloadCompare()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+      </div>
+      <div id="compare-out"></div>
+    </div>
+
+    <!-- TALLY -->
+    <div class="panel" id="panel-tally">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="tly-q" placeholder="Search athlete, value, venue...">
+        </div>
+        <select id="tly-event" onchange="renderTally()"><option value="">All events</option></select>
+        <select id="tly-year"  onchange="renderTally()"><option value="">All years</option></select>
+      </div>
+      <div id="tally-out"></div>
+    </div>
+
+    <!-- PARTICIPANT TALLY (new!) -->
+    <div class="panel" id="panel-participant">
+      <div style="background:linear-gradient(135deg,rgba(75,139,245,0.08),rgba(45,226,200,0.05));border:1px solid rgba(75,139,245,0.15);border-radius:var(--r2);padding:18px;margin-bottom:18px">
+        <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+          📊 Multi-Year Participant Tally
+        </div>
+        <p style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">
+          Upload participant Excel/CSV files to automatically track and compare each participant's performance across multiple years.
+          You can either <strong>upload separate files per year</strong> (Mode A) or <strong>one combined file with a Year column</strong> (Mode B).
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="openModal('modal-ptally-import')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Participant Files
+          </button>
+          <button class="btn btn-ghost" onclick="loadSample();renderParticipant()">
+            Load Sample Data
+          </button>
+          <button class="btn btn-ghost" onclick="downloadParticipantTemplate()">
+            Download Template
+          </button>
+        </div>
+      </div>
+
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="pt-search" placeholder="Search participant..." oninput="renderParticipant()">
+        </div>
+        <select id="pt-event" onchange="renderParticipant()"><option value="">All events</option></select>
+        <select id="pt-sortby" onchange="renderParticipant()">
+          <option value="name">Sort: Name</option>
+          <option value="improvement">Sort: Most Improved</option>
+          <option value="records">Sort: Most Records</option>
+          <option value="pb">Sort: Personal Best</option>
+        </select>
+      </div>
+      <div id="participant-out"></div>
+    </div>
+
+    <!-- EVENT BRANDING -->
+    <div class="panel" id="panel-branding">
+      <div style="background:linear-gradient(135deg,rgba(0,229,200,0.08),rgba(176,110,248,0.06));border:1px solid rgba(0,229,200,0.18);border-radius:var(--r2);padding:18px;margin-bottom:18px">
+        <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+          🎨 Event Logos & Branding
+        </div>
+        <p style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">
+          Add a custom logo or image to each event. Logos appear across the platform — on dashboards, athlete profiles, and participant cards. Each event can have its own unique look.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="openModal('modal-logo-upload')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Upload Event Logo
+          </button>
+          <button class="btn btn-ghost" onclick="renderBranding()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.01-7"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="branding-out" class="event-logo-grid"></div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div>
+
+<!-- ADD RECORD MODAL -->
+<div class="modal-overlay" id="modal-add" onclick="bgClose(event,'modal-add')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h2>Add New Record</h2>
+        <p>Enter athlete performance data</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-add')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Athlete / Competitor <span class="req">*</span></label><input type="text" id="f-ath" placeholder="e.g. Rohit Sharma"></div>
+      <div class="form-row"><label>Event Name <span class="req">*</span></label><input type="text" id="f-ev" placeholder="e.g. 100m Sprint"></div>
+      <div class="form-row"><label>Event Type</label>
+        <select id="f-etype">
+          <option>Track</option><option>Field</option><option>Swimming</option>
+          <option>Cycling</option><option>Football</option><option>Cricket</option>
+          <option>Kabaddi</option><option>Wrestling</option><option>Boxing</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Season / Year <span class="req">*</span></label><input type="number" id="f-yr" placeholder="e.g. 2024"></div>
+      <div class="form-row"><label>Result / Value <span class="req">*</span></label><input type="text" id="f-val" placeholder="e.g. 10.52"></div>
+      <div class="form-row"><label>Unit</label><input type="text" id="f-unit" placeholder="sec / m / pts / kg"></div>
+      <div class="form-row"><label>Rank / Position</label><input type="number" id="f-rank" placeholder="e.g. 1"></div>
+      <div class="form-row"><label>Venue</label><input type="text" id="f-venue" placeholder="e.g. Nehru Stadium"></div>
+    </div>
+    <div class="form-row" style="margin-top:12px"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Any additional notes..."></textarea></div>
+    <hr>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="modal-import" onclick="bgClose(event,'modal-import')">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <div>
+        <h2>Import Excel / CSV</h2>
+        <p>Required: Athlete, Event, Year, Value — Optional: EventType, Unit, Rank, Venue, Notes</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-import')">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;line-height:1.7">
+      Required columns: <code>Athlete</code> <code>Event</code> <code>Year</code> <code>Value</code>
+      &nbsp;·&nbsp; Optional: <code>EventType</code> <code>Unit</code> <code>Rank</code> <code>Venue</code> <code>Notes</code>
+    </div>
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-in').click()">
+      <div class="uz-icon">📊</div>
+      <h3>Click to choose file or drag & drop</h3>
+      <p>Your data stays private — processed entirely in your browser</p>
+      <div class="ext-badges">
+        <span class="ext-badge">.xlsx</span>
+        <span class="ext-badge">.xls</span>
+        <span class="ext-badge">.csv</span>
+      </div>
+    </div>
+    <input type="file" id="file-in" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileChange(event)">
+    <div id="import-preview" style="margin-top:12px"></div>
+    <hr>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-import')">Cancel</button>
+      <button class="btn btn-success" id="do-import" style="display:none" onclick="doImport()">✓ Import Records</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTICIPANT TALLY IMPORT MODAL -->
+<div class="modal-overlay" id="modal-ptally-import" onclick="bgClose(event,'modal-ptally-import')">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <div>
+        <h2>Upload Participant Data</h2>
+        <p>Track participants across multiple years</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-ptally-import')">×</button>
+    </div>
+
+    <div class="upload-mode-tabs">
+      <button class="upload-mode-tab active" onclick="setUploadMode('single',this)">📄 Single File (with Year column)</button>
+      <button class="upload-mode-tab" onclick="setUploadMode('multi',this)">📚 Multiple Files (one per year)</button>
+    </div>
+
+    <div id="ptally-mode-single">
+      <div style="font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7">
+        Your Excel/CSV must include a <code>Year</code> column. Multiple years in one file will be automatically separated.
+        <br>Columns: <code>Athlete</code> <code>Event</code> <code>Year</code> <code>Value</code> + optional columns
+      </div>
+      <div class="upload-zone" id="pt-drop-single" onclick="document.getElementById('pt-file-single').click()">
+        <div class="uz-icon">📊</div>
+        <h3>Drop your combined multi-year file here</h3>
+        <p>One file containing data from all years</p>
+        <div class="ext-badges"><span class="ext-badge">.xlsx</span><span class="ext-badge">.xls</span><span class="ext-badge">.csv</span></div>
+      </div>
+      <input type="file" id="pt-file-single" accept=".xlsx,.xls,.csv" style="display:none" onchange="handlePtSingle(event)">
+    </div>
+
+    <div id="ptally-mode-multi" style="display:none">
+      <div style="font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.7">
+        Upload one file per year. You'll assign a year to each file after upload.
+        <br>Columns per file: <code>Athlete</code> <code>Event</code> <code>Value</code> + optional columns (no Year column needed)
+      </div>
+      <div class="upload-zone" id="pt-drop-multi" onclick="document.getElementById('pt-file-multi').click()">
+        <div class="uz-icon">📚</div>
+        <h3>Drop multiple year files here</h3>
+        <p>Select multiple files at once (Ctrl+Click or Cmd+Click)</p>
+        <div class="ext-badges"><span class="ext-badge">.xlsx</span><span class="ext-badge">.xls</span><span class="ext-badge">.csv</span></div>
+      </div>
+      <input type="file" id="pt-file-multi" accept=".xlsx,.xls,.csv" multiple style="display:none" onchange="handlePtMulti(event)">
+      <div id="pt-multi-year-assign" style="margin-top:12px"></div>
+    </div>
+
+    <div id="pt-import-preview" style="margin-top:12px"></div>
+    <hr>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ptally-import')">Cancel</button>
+      <button class="btn btn-success" id="do-pt-import" style="display:none" onclick="doPtImport()">✓ Import & Tally</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGO UPLOAD MODAL -->
+<div class="modal-overlay" id="modal-logo-upload" onclick="bgClose(event,'modal-logo-upload')">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <div>
+        <h2>🎨 Upload Event Logo</h2>
+        <p>Add a logo or image to identify an event. PNG, JPG, SVG, WebP supported.</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-logo-upload')">×</button>
+    </div>
+    <div class="form-row" style="margin-bottom:14px">
+      <label>Select Event <span class="req">*</span></label>
+      <select id="logo-event-sel"><option value="">— choose an event —</option></select>
+    </div>
+    <div class="form-row" style="margin-bottom:14px">
+      <label>Event Color Theme</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="logo-color-picker">
+        <button class="logo-color-opt" data-color="#4f8ef8,#00e5c8" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#4f8ef8,#00e5c8);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Blue-Cyan"></button>
+        <button class="logo-color-opt" data-color="#b06ef8,#ff5fb3" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#b06ef8,#ff5fb3);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Purple-Pink"></button>
+        <button class="logo-color-opt" data-color="#ff7c3e,#ffb800" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#ff7c3e,#ffb800);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Orange-Amber"></button>
+        <button class="logo-color-opt" data-color="#00e676,#00c2b3" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#00e676,#00c2b3);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Green-Teal"></button>
+        <button class="logo-color-opt" data-color="#ff4f6a,#ff7c3e" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#ff4f6a,#ff7c3e);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Red-Orange"></button>
+        <button class="logo-color-opt" data-color="#00e5c8,#4f8ef8" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#00e5c8,#4f8ef8);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Teal-Blue"></button>
+        <button class="logo-color-opt" data-color="#ffb800,#00e676" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#ffb800,#00e676);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Gold-Green"></button>
+        <button class="logo-color-opt" data-color="#ff5fb3,#b06ef8" onclick="selectLogoColor(this)" style="background:linear-gradient(135deg,#ff5fb3,#b06ef8);width:32px;height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer" title="Pink-Purple"></button>
+      </div>
+    </div>
+    <div class="upload-zone" id="logo-drop-zone" onclick="document.getElementById('logo-file-in').click()" style="padding:24px 20px">
+      <div id="logo-preview-area">
+        <div class="uz-icon">🖼️</div>
+        <h3>Click to choose logo image</h3>
+        <p>PNG, JPG, SVG, WebP · Max 2MB · Will be stored in your browser database</p>
+      </div>
+    </div>
+    <input type="file" id="logo-file-in" accept="image/*" style="display:none" onchange="handleLogoFile(event)">
+    <hr>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('modal-logo-upload')">Cancel</button>
+      <button class="btn btn-primary" id="do-save-logo" onclick="saveLogo()" style="display:none">Save Logo</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-ath" onclick="bgClose(event,'modal-ath')">
+  <div class="modal-box wider">
+    <div class="modal-head">
+      <div><h2 id="ath-modal-title">Athlete Profile</h2></div>
+      <button class="modal-close" onclick="closeModal('modal-ath')">×</button>
+    </div>
+
+    <div class="ath-modal-header">
+      <div class="ath-modal-avatar" id="ath-av">?</div>
+      <div style="flex:1">
+        <div class="ath-modal-name" id="ath-modal-name">—</div>
+        <div class="ath-modal-stats" id="ath-modal-stats"></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchAthTab('pb',this)">🏅 Personal Bests</button>
+      <button class="tab-btn" onclick="switchAthTab('timeline',this)">📈 Year Timeline</button>
+      <button class="tab-btn" onclick="switchAthTab('history',this)">📋 Full History</button>
+      <button class="tab-btn" onclick="switchAthTab('chart',this)">📊 Progress Chart</button>
+    </div>
+
+    <div class="tab-content active" id="athtab-pb"></div>
+    <div class="tab-content" id="athtab-timeline"></div>
+    <div class="tab-content" id="athtab-history"></div>
+    <div class="tab-content" id="athtab-chart">
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+        <label style="font-size:11px;color:var(--text3)">Event:</label>
+        <select id="chart-ev-sel" onchange="buildAthChart()" style="width:auto;min-width:160px"></select>
+        <label style="font-size:11px;color:var(--text3);margin-left:10px">Chart:</label>
+        <select id="chart-type-sel" onchange="buildAthChart()" style="width:auto;min-width:100px">
+          <option value="line">Line</option>
+          <option value="bar">Bar</option>
+        </select>
+      </div>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="ath-chart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───
+let DB = [];
+let importBuf = [];
+let ptImportBuf = [];
+let ptMultiFiles = [];
+let ptUploadMode = 'single';
+let curAthlete = null;
+let chartInst = { ev: null, seas: null, ath: null, types: null, cmp: null };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+// ─── HELPERS ───
+function uniq(key) {
+  return [...new Set(DB.map(r => r[key]))].filter(Boolean).sort((a, b) =>
+    typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+  );
+}
+function initials(name) { return (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function lowerIsBetter(unit) { return /sec|s$|time|min|ms/.test((unit||'').toLowerCase()); }
+function isBetter(a, b, unit) {
+  const fa = parseFloat(a), fb = parseFloat(b);
+  if (isNaN(fa) || isNaN(fb)) return false;
+  return lowerIsBetter(unit) ? fa < fb : fa > fb;
+}
+function esc(s) { return (s||'').replace(/'/g,"\\'"); }
+function fmtDelta(d, unit, bigger=null) {
+  if (isNaN(d)) return '<span class="change-flat">—</span>';
+  const improved = bigger !== null ? bigger : (lowerIsBetter(unit) ? d < 0 : d > 0);
+  const sign = d > 0 ? '+' : '';
+  if (improved) return `<span class="change-up">▲ ${sign}${d.toFixed(2)}</span>`;
+  if (d === 0) return `<span class="change-flat">—</span>`;
+  return `<span class="change-down">▼ ${sign}${d.toFixed(2)}</span>`;
+}
+
+function updateSidebarCount() {
+  const athletes = uniq('athlete').length;
+  document.getElementById('sb-records').textContent = DB.length;
+  document.getElementById('sb-athletes').textContent = athletes;
+  document.getElementById('nav-count').textContent = DB.length;
+}
+
+// ─── NOTIFICATIONS ───
+function showNotif(msg, type='success') {
+  const el = document.getElementById('notif');
+  el.innerHTML = msg;
+  el.className = 'notif show notif-' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'notif'; }, 4000);
+}
+
+// ─── NAVIGATION ───
+const panelInfo = {
+  dashboard:   { title: 'Dashboard',          sub: 'Overview' },
+  events:      { title: 'All Records',         sub: 'Browse & manage' },
+  athletes:    { title: 'Athletes',            sub: 'Profiles & PBs' },
+  compare:     { title: 'Year Compare',        sub: 'Side-by-side seasons' },
+  tally:       { title: 'Tally & Search',      sub: 'Cross-year search' },
+  participant: { title: 'Participant Tally',   sub: 'Multi-year tracking' },
+  branding:    { title: 'Event Logos',         sub: 'Upload & manage event branding' },
+};
+
+function switchPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+  const info = panelInfo[name] || {};
+  document.getElementById('tb-title').childNodes[0].nodeValue = (info.title||'') + ' ';
+  document.getElementById('tb-sub').textContent = info.sub || '';
+
+  if (name==='dashboard')   renderDashboard();
+  if (name==='events')      renderEvents();
+  if (name==='athletes')    renderAthletes();
+  if (name==='compare')     initCompare();
+  if (name==='tally')       initTally();
+  if (name==='participant') renderParticipant();
+  if (name==='branding')    renderBranding();
+}
+
+// ─── MODALS ───
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function bgClose(e, id) { if (e.target.id===id) closeModal(id); }
+
+// ─── ADD RECORD ───
+function saveRecord() {
+  const ath = document.getElementById('f-ath').value.trim();
+  const ev  = document.getElementById('f-ev').value.trim();
+  const yr  = document.getElementById('f-yr').value.trim();
+  const val = document.getElementById('f-val').value.trim();
+  if (!ath || !ev || !yr || !val) { showNotif('Fill all required fields', 'error'); return; }
+  const rec = {
+    id: uid(), athlete: ath, event: ev,
+    eventType: document.getElementById('f-etype').value,
+    year: parseInt(yr), value: val,
+    unit: document.getElementById('f-unit').value.trim(),
+    rank: document.getElementById('f-rank').value.trim(),
+    venue: document.getElementById('f-venue').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  DB.push(rec);
+  idbPut('records', rec);
+  closeModal('modal-add');
+  ['f-ath','f-ev','f-yr','f-val','f-unit','f-rank','f-venue','f-notes'].forEach(id=>document.getElementById(id).value='');
+  showNotif('✓ Record added & saved!');
+  updateSidebarCount();
+  renderDashboard();
+}
+
+// ─── FILE IMPORT ───
+function handleFileChange(e) { const f = e.target.files[0]; if (f) processFile(f); }
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f);});
+
+function processFile(file, cb) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  if (ext==='csv') { reader.onload=ev=>{ const r=parseCSVData(ev.target.result); if(cb) cb(r); else { importBuf=r; showImportPreview(); }}; reader.readAsText(file); }
+  else { reader.onload=ev=>{ const r=parseXLSXData(ev.target.result); if(cb) cb(r); else { importBuf=r; showImportPreview(); }}; reader.readAsArrayBuffer(file); }
+}
+
+function parseXLSXData(buf) {
+  const wb = XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+  return normaliseRows(rows);
+}
+function parseCSVData(text) {
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if (lines.length<2) return [];
+  const parseRow = line=>{
+    const r=[]; let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){r.push(cur.trim());cur='';}else{cur+=c;}}
+    r.push(cur.trim()); return r;
+  };
+  const headers=parseRow(lines[0]).map(h=>h.toLowerCase().replace(/[\s_"]/g,''));
+  const result=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=parseRow(lines[i]);
+    const obj={};
+    headers.forEach((h,idx)=>{ obj[h]=cols[idx]||''; });
+    result.push(obj);
+  }
+  return normaliseRows(result);
+}
+
+function normaliseRows(rows) {
+  const out=[];
+  rows.forEach(row=>{
+    const get=names=>{
+      for(const n of names){
+        const key=Object.keys(row).find(k=>k.trim().toLowerCase().replace(/[\s_]/g,'')=== n.replace(/[\s_]/g,''));
+        if(key!==undefined && row[key]!=='') return String(row[key]).trim();
+      }
+      return '';
+    };
+    const athlete=get(['athlete','name','playername','competitor','player','participant']);
+    const event  =get(['event','eventname','discipline','sport','category']);
+    const year   =get(['year','season','yr']);
+    const value  =get(['value','result','score','time','distance','height','mark','performance']);
+    if(!athlete||!event||!year||!value) return;
+    out.push({
+      id:uid(), athlete, event,
+      eventType: get(['eventtype','type'])||'Other',
+      year: parseInt(year)||0, value,
+      unit:  get(['unit','units']),
+      rank:  get(['rank','position','pos','place']),
+      venue: get(['venue','location','stadium','ground']),
+      notes: get(['notes','note','remarks','comment']),
+    });
+  });
+  return out;
+}
+
+function showImportError(msg) {
+  document.getElementById('import-preview').innerHTML=`<div style="color:var(--red);background:rgba(245,95,95,0.07);border:1px solid rgba(245,95,95,0.18);border-radius:var(--r);padding:10px 12px;font-size:12.5px">⚠ ${msg}</div>`;
+  document.getElementById('do-import').style.display='none';
+}
+function showImportPreview() {
+  const preview=document.getElementById('import-preview');
+  if(!importBuf.length){showImportError('No valid rows found. Check column names: Athlete, Event, Year, Value');return;}
+  const sample=importBuf.slice(0,5);
+  preview.innerHTML=`<div class="import-ok">✓ Found <strong>${importBuf.length}</strong> valid rows ready to import (${[...new Set(importBuf.map(r=>r.year))].sort().join(', ')})</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Athlete</th><th>Event</th><th>Year</th><th>Value</th><th>Unit</th><th>Rank</th></tr></thead>
+    <tbody>${sample.map(r=>`<tr><td>${r.athlete}</td><td>${r.event}</td><td>${r.year}</td><td>${r.value}</td><td>${r.unit||'—'}</td><td>${r.rank||'—'}</td></tr>`).join('')}
+    ${importBuf.length>5?`<tr><td colspan="6" style="text-align:center;color:var(--text3);font-size:11px">… and ${importBuf.length-5} more rows</td></tr>`:''}
+    </tbody></table></div>`;
+  document.getElementById('do-import').style.display='inline-flex';
+}
+function doImport() {
+  DB.push(...importBuf);
+  idbPutAll('records', importBuf);
+  importBuf=[];
+  closeModal('modal-import');
+  document.getElementById('import-preview').innerHTML='';
+  document.getElementById('do-import').style.display='none';
+  document.getElementById('file-in').value='';
+  updateSidebarCount(); renderDashboard();
+  showNotif(`✓ Imported & saved! Total: ${DB.length} records`);
+}
+
+// ─── PARTICIPANT TALLY IMPORT ───
+function setUploadMode(mode, btn) {
+  ptUploadMode = mode;
+  document.querySelectorAll('.upload-mode-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ptally-mode-single').style.display = mode==='single'?'block':'none';
+  document.getElementById('ptally-mode-multi').style.display = mode==='multi'?'block':'none';
+  document.getElementById('pt-import-preview').innerHTML='';
+  document.getElementById('do-pt-import').style.display='none';
+  ptImportBuf=[];
+}
+
+// Drag for single
+const ptdzS = document.getElementById('pt-drop-single');
+ptdzS.addEventListener('dragover',e=>{e.preventDefault();ptdzS.classList.add('drag');});
+ptdzS.addEventListener('dragleave',()=>ptdzS.classList.remove('drag'));
+ptdzS.addEventListener('drop',e=>{e.preventDefault();ptdzS.classList.remove('drag');const f=e.dataTransfer.files[0];if(f){document.getElementById('pt-file-single').files;handlePtSingleFile(f);}});
+
+function handlePtSingle(e) { const f=e.target.files[0]; if(f) handlePtSingleFile(f); }
+function handlePtSingleFile(file) {
+  processFile(file, rows=>{
+    ptImportBuf = rows;
+    showPtPreview();
+  });
+}
+
+function handlePtMulti(e) {
+  ptMultiFiles = Array.from(e.target.files);
+  const assignDiv = document.getElementById('pt-multi-year-assign');
+  const curYear = new Date().getFullYear();
+  assignDiv.innerHTML = ptMultiFiles.map((f,i)=>`
+    <div class="year-assign" id="ya-${i}">
+      <div class="ya-name">📄 ${f.name}</div>
+      <select id="ya-yr-${i}">${Array.from({length:20},(_,k)=>{const y=curYear-k;return `<option value="${y}" ${k===i?'selected':''}>${y}</option>`;}).join('')}</select>
+      <button class="ya-remove" onclick="removePtFile(${i})">✕</button>
+    </div>`).join('');
+  if(ptMultiFiles.length) {
+    assignDiv.innerHTML += `<button class="btn btn-cyan" style="margin-top:8px" onclick="processPtMulti()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Process All Files
+    </button>`;
+  }
+}
+function removePtFile(i) {
+  ptMultiFiles.splice(i,1);
+  if(ptMultiFiles.length===0) { document.getElementById('pt-multi-year-assign').innerHTML=''; }
+  else { handlePtMulti({target:{files:ptMultiFiles}}); }
+}
+
+function processPtMulti() {
+  const promises = ptMultiFiles.map((file,i)=>new Promise(res=>{
+    const year = parseInt(document.getElementById(`ya-yr-${i}`).value);
+    processFile(file, rows=>{ rows.forEach(r=>r.year=year); res(rows); });
+  }));
+  Promise.all(promises).then(allRows=>{
+    ptImportBuf = allRows.flat();
+    showPtPreview();
+  });
+}
+
+function showPtPreview() {
+  const preview = document.getElementById('pt-import-preview');
+  if(!ptImportBuf.length){ preview.innerHTML=`<div style="color:var(--red);padding:10px;border-radius:var(--r);background:rgba(245,95,95,0.07);border:1px solid rgba(245,95,95,0.18)">⚠ No valid rows found.</div>`; return; }
+  const years = [...new Set(ptImportBuf.map(r=>r.year))].sort();
+  const athletes = [...new Set(ptImportBuf.map(r=>r.athlete))].length;
+  preview.innerHTML=`<div class="import-ok">
+    ✓ Found <strong>${ptImportBuf.length}</strong> records · <strong>${athletes}</strong> participants · Years: <strong>${years.join(', ')}</strong>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Athlete</th><th>Event</th><th>Year</th><th>Value</th><th>Unit</th></tr></thead>
+    <tbody>${ptImportBuf.slice(0,6).map(r=>`<tr><td>${r.athlete}</td><td>${r.event}</td><td><span class="year-chip">${r.year}</span></td><td><strong>${r.value}</strong></td><td>${r.unit||'—'}</td></tr>`).join('')}
+    ${ptImportBuf.length>6?`<tr><td colspan="5" style="text-align:center;color:var(--text3);font-size:11px">… and ${ptImportBuf.length-6} more rows</td></tr>`:''}
+    </tbody></table></div>`;
+  document.getElementById('do-pt-import').style.display='inline-flex';
+}
+
+function doPtImport() {
+  const newRecs = ptImportBuf.filter(r=>!DB.find(e=>e.athlete===r.athlete&&e.event===r.event&&e.year===r.year));
+  DB.push(...newRecs);
+  idbPutAll('records', newRecs);
+  ptImportBuf=[];
+  closeModal('modal-ptally-import');
+  document.getElementById('pt-import-preview').innerHTML='';
+  document.getElementById('do-pt-import').style.display='none';
+  updateSidebarCount();
+  renderParticipant();
+  showNotif(`✓ Participant data loaded & saved! ${DB.length} total records.`);
+  // Switch to participant panel
+  const btn = document.querySelector('.nav-item:nth-last-child(2)');
+  switchPanel('participant', btn);
+}
+
+// ─── DOWNLOAD TEMPLATE ───
+function downloadParticipantTemplate() {
+  const rows=[
+    {Athlete:'Arjun Mehta',Event:'100m Sprint',Year:2022,Value:'10.82',Unit:'sec',Rank:2,Venue:'Nehru Stadium',Notes:''},
+    {Athlete:'Arjun Mehta',Event:'100m Sprint',Year:2023,Value:'10.65',Unit:'sec',Rank:1,Venue:'Barasat Ground',Notes:'PB'},
+    {Athlete:'Priya Das',  Event:'200m Sprint', Year:2022,Value:'24.50',Unit:'sec',Rank:2,Venue:'Salt Lake',Notes:''},
+    {Athlete:'Priya Das',  Event:'200m Sprint', Year:2023,Value:'24.11',Unit:'sec',Rank:1,Venue:'Burdwan',Notes:'Season record'},
+  ];
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Participants');
+  XLSX.writeFile(wb,'EventBase_Participant_Template.xlsx');
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const events   = uniq('event');
+  const athletes = uniq('athlete');
+  const seasons  = uniq('year');
+  document.getElementById('m-events').textContent   = events.length;
+  document.getElementById('m-athletes').textContent = athletes.length;
+  document.getElementById('m-seasons').textContent  = seasons.length;
+  document.getElementById('m-total').textContent    = DB.length;
+  updateSidebarCount();
+
+  // Recent table
+  const recent = document.getElementById('dash-recent');
+  if (!DB.length) {
+    recent.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><h3>No data yet</h3><p>Add records manually or import an Excel / CSV file.</p></div>`;
+  } else {
+    const rows=[...DB].reverse().slice(0,8);
+    recent.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th></th><th>Athlete</th><th>Event</th><th>Year</th><th>Value</th><th>Unit</th><th>Rank</th><th>Venue</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td style="width:32px;padding:6px 8px">${eventLogoHTML(r.event,24)}</td>
+        <td class="td-athlete" onclick="viewAthlete('${esc(r.athlete)}')">${r.athlete}</td>
+        <td>${r.event}</td>
+        <td><span class="year-chip">${r.year}</span></td>
+        <td><strong>${r.value}</strong></td>
+        <td>${r.unit||'—'}</td>
+        <td>${r.rank?rankBadge(r.rank):'—'}</td>
+        <td style="color:var(--text2)">${r.venue||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  // Event bar chart
+  const evCounts={};
+  DB.forEach(r=>evCounts[r.event]=(evCounts[r.event]||0)+1);
+  const evLabels=Object.keys(evCounts).sort((a,b)=>evCounts[b]-evCounts[a]).slice(0,8);
+  const evData=evLabels.map(e=>evCounts[e]);
+
+  if(chartInst.ev) chartInst.ev.destroy();
+  chartInst.ev=new Chart(document.getElementById('chart-events').getContext('2d'),{
+    type:'bar',
+    data:{labels:evLabels,datasets:[{data:evData,backgroundColor:evLabels.map((_,i)=>['#4f8ef8','#00e5c8','#ffb800','#00e676','#b06ef8','#ff5fb3','#ff4f6a','#ff7c3e'][i%8]),borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7d88a0',font:{size:10}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#7d88a0',stepSize:1,font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}}}
+  });
+
+  // Season line chart
+  const seaCounts={};
+  DB.forEach(r=>seaCounts[r.year]=(seaCounts[r.year]||0)+1);
+  const seaYears=Object.keys(seaCounts).sort((a,b)=>a-b);
+  if(chartInst.seas) chartInst.seas.destroy();
+  chartInst.seas=new Chart(document.getElementById('chart-seasons').getContext('2d'),{
+    type:'line',
+    data:{labels:seaYears,datasets:[{data:seaYears.map(y=>seaCounts[y]),borderColor:'#00e5c8',backgroundColor:'rgba(0,229,200,0.08)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:'#00e5c8',pointBorderColor:'#080c16',pointBorderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7d88a0',font:{size:10}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#7d88a0',stepSize:1,font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}}}
+  });
+
+  // Top athletes
+  const athCounts={};
+  DB.forEach(r=>athCounts[r.athlete]=(athCounts[r.athlete]||0)+1);
+  const topAths=Object.entries(athCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxRecs=topAths[0]?topAths[0][1]:1;
+  const topEl=document.getElementById('dash-top-athletes');
+  const gradColors=['var(--grad-main)','var(--grad-purple)','var(--grad-warm)','var(--grad-green)','linear-gradient(135deg,#ff4f6a,#ff7c3e)'];
+  topEl.innerHTML=topAths.map(([name,count],i)=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer" onclick="viewAthlete('${esc(name)}')">
+      <div class="rank-badge ${i<3?'r'+(i+1):''}">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-size:12.5px;font-weight:600;color:var(--text)">${name}</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.round(count/maxRecs*100)}%;background:${gradColors[i%5]}"></div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);min-width:50px;text-align:right">${count} record${count!==1?'s':''}</div>
+    </div>`).join('') || '<p style="color:var(--text3);font-size:12px">No data</p>';
+
+  // Event type donut
+  const typeCounts={};
+  DB.forEach(r=>typeCounts[r.eventType||'Other']=(typeCounts[r.eventType||'Other']||0)+1);
+  const typeLabels=Object.keys(typeCounts);
+  const typeColors=['#4f8ef8','#00e5c8','#ffb800','#00e676','#b06ef8','#ff5fb3','#ff4f6a'];
+  if(chartInst.types) chartInst.types.destroy();
+  if(typeLabels.length) chartInst.types=new Chart(document.getElementById('chart-types').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:typeLabels,datasets:[{data:typeLabels.map(t=>typeCounts[t]),backgroundColor:typeColors.slice(0,typeLabels.length),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#7d88a0',font:{size:11},boxWidth:10,padding:8}}}}
+  });
+}
+
+function rankBadge(r) {
+  const cls = r=='1'?'r1':r=='2'?'r2':r=='3'?'r3':'';
+  return `<span class="rank-badge ${cls}">#${r}</span>`;
+}
+
+// ─── EVENTS PANEL ───
+function renderEvents() {
+  const q  = (document.getElementById('ev-search').value||'').toLowerCase();
+  const yr = document.getElementById('ev-year').value;
+  const tp = document.getElementById('ev-type').value;
+  const ev = document.getElementById('ev-event').value;
+  populateSelect('ev-year', uniq('year'), yr, 'All years');
+  populateSelect('ev-type', uniq('eventType'), tp, 'All types');
+  populateSelect('ev-event', uniq('event'), ev, 'All events');
+  document.getElementById('ev-search').oninput = renderEvents;
+
+  let rows=DB.filter(r=>
+    (!q  || r.athlete.toLowerCase().includes(q)||r.event.toLowerCase().includes(q)||(r.venue||'').toLowerCase().includes(q))&&
+    (!yr || String(r.year)===yr)&&(!tp||r.eventType===tp)&&(!ev||r.event===ev)
+  );
+
+  const out=document.getElementById('events-out');
+  if(!rows.length){out.innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><h3>No records found</h3><p>Try different filters or add data.</p></div>`;return;}
+
+  out.innerHTML=`<p style="font-size:11.5px;color:var(--text3);margin-bottom:10px">${rows.length} record${rows.length!==1?'s':''} found</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Athlete</th><th>Event</th><th>Type</th><th>Year</th><th>Value</th><th>Unit</th><th>Rank</th><th>Venue</th><th></th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td style="width:36px;padding:6px 8px">${eventLogoHTML(r.event,28)}</td>
+      <td class="td-athlete" onclick="viewAthlete('${esc(r.athlete)}')">${r.athlete}</td>
+      <td>${r.event}</td>
+      <td><span class="tag tag-blue">${r.eventType||'Other'}</span></td>
+      <td><span class="year-chip">${r.year}</span></td>
+      <td><strong>${r.value}</strong></td>
+      <td>${r.unit||'—'}</td>
+      <td>${r.rank?rankBadge(r.rank):'—'}</td>
+      <td style="color:var(--text2)">${r.venue||'—'}</td>
+      <td><button class="del-btn" onclick="delRecord('${r.id}')">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function delRecord(id) {
+  if(!confirm('Delete this record?')) return;
+  DB=DB.filter(r=>r.id!==id);
+  idbDelete('records', id);
+  renderEvents(); updateSidebarCount(); showNotif('Record deleted.');
+}
+
+// ─── ATHLETES PANEL ───
+function renderAthletes() {
+  const q  = (document.getElementById('ath-search').value||'').toLowerCase();
+  const ev = document.getElementById('ath-filter-event').value;
+  populateSelect('ath-filter-event', uniq('event'), ev, 'All events');
+  document.getElementById('ath-search').oninput = renderAthletes;
+  
+  let aths=uniq('athlete').filter(a=>(!q||a.toLowerCase().includes(q)));
+  if(ev) aths=aths.filter(a=>DB.some(r=>r.athlete===a&&r.event===ev));
+  const out=document.getElementById('athletes-out');
+  if(!aths.length){out.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>No athletes found</h3><p>Add records to see athlete profiles.</p></div>`;return;}
+
+  out.innerHTML=`<div class="ath-grid">${aths.map(a=>{
+    const recs=DB.filter(r=>r.athlete===a);
+    const evts=[...new Set(recs.map(r=>r.event))];
+    const yrs=[...new Set(recs.map(r=>r.year))].sort((x,y)=>x-y);
+    // calculate improvement
+    let trendHtml='';
+    if(yrs.length>=2){
+      const lastYrRecs=recs.filter(r=>r.year===yrs[yrs.length-1]);
+      const prevYrRecs=recs.filter(r=>r.year===yrs[yrs.length-2]);
+      const improved=lastYrRecs.some(lr=>prevYrRecs.some(pr=>pr.event===lr.event&&isBetter(lr.value,pr.value,lr.unit)));
+      trendHtml=`<div class="ath-card-trend">${improved?'▲ Improved vs last year':'—'}</div>`;
+    }
+    return `<div class="ath-card" onclick="viewAthlete('${esc(a)}')">
+      <div class="ath-avatar">${initials(a)}</div>
+      <div class="ath-card-name">${a}</div>
+      <div class="ath-card-meta">${recs.length} records · ${evts.length} event${evts.length!==1?'s':''}</div>
+      <div class="ath-card-footer">${yrs.map(y=>`<span class="year-chip">${y}</span>`).join('')}</div>
+      <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">${evts.map(ev=>eventLogoHTML(ev,22)).join('')}</div>
+      ${trendHtml}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ─── ATHLETE DETAIL ───
+function viewAthlete(name) {
+  curAthlete = name;
+  const recs=DB.filter(r=>r.athlete===name);
+  const evts=[...new Set(recs.map(r=>r.event))];
+  const yrs=[...new Set(recs.map(r=>r.year))].sort((a,b)=>a-b);
+
+  document.getElementById('ath-av').textContent=initials(name);
+  document.getElementById('ath-modal-name').textContent=name;
+  document.getElementById('ath-modal-title').textContent=name;
+
+  const evMap={};
+  recs.forEach(r=>{if(!evMap[r.event])evMap[r.event]=[];evMap[r.event].push(r);});
+
+  // Stat pills
+  document.getElementById('ath-modal-stats').innerHTML=`
+    <div class="ath-stat-pill"><b>${recs.length}</b> records</div>
+    <div class="ath-stat-pill"><b>${evts.length}</b> event${evts.length!==1?'s':''}</div>
+    <div class="ath-stat-pill">Seasons: <b>${yrs.join(', ')}</b></div>`;
+
+  // Personal Bests
+  const pbHtml=Object.entries(evMap).map(([ev,ers])=>{
+    let best=ers[0]; ers.forEach(r=>{if(isBetter(r.value,best.value,r.unit))best=r;});
+    const sorted=[...ers].sort((a,b)=>a.year-b.year);
+    const yearTags=sorted.map(r=>{
+      const isPB=r===best;
+      return `<span class="year-chip" style="${isPB?'background:rgba(45,226,200,0.15);border-color:rgba(45,226,200,0.3);color:var(--cyan)':''}">${r.year}: <strong>${r.value}</strong>${r.unit?' '+r.unit:''}</span>`;
+    }).join('');
+    return `<div class="pb-item">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div style="flex-shrink:0">${eventLogoHTML(ev,36)}</div>
+        <div class="pb-event">
+          <div class="pb-event-name">${ev} <span class="tag tag-blue" style="font-size:9.5px">${ers[0].eventType||''}</span></div>
+          <div class="pb-years">${yearTags}</div>
+        </div>
+      </div>
+      <div class="pb-best">
+        <div class="pb-val">${best.value}${best.unit?' '+best.unit:''}</div>
+        <div class="pb-meta">Personal Best <span class="pb-badge">PB</span></div>
+        <div class="pb-meta">${best.year}${best.venue?' · '+best.venue:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('athtab-pb').innerHTML=`<div class="pb-list">${pbHtml||'<p style="color:var(--text3)">No data.</p>'}</div>`;
+
+  // Year Timeline tab
+  const timelineHtml=Object.entries(evMap).map(([ev,ers])=>{
+    const sorted=[...ers].sort((a,b)=>a.year-b.year);
+    const vals=sorted.map(r=>parseFloat(r.value)).filter(v=>!isNaN(v));
+    if(!vals.length) return '';
+    const maxV=Math.max(...vals), minV=Math.min(...vals);
+    const range=maxV-minV||1;
+    const unit=ers[0].unit||'';
+    const isLow=lowerIsBetter(unit);
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="card-header"><div class="card-title">${ev}</div></div>
+      <div class="progress-timeline">
+      ${sorted.map((r,i)=>{
+        const v=parseFloat(r.value);
+        const pct=isNaN(v)?0:isLow?Math.round((maxV-v)/range*100):Math.round((v-minV)/range*100);
+        const prev=i>0?sorted[i-1]:null;
+        const d=prev&&!isNaN(v)?v-parseFloat(prev.value):null;
+        const color=d===null?'#4b8bf5':isLow?(d<0?'#28d97a':'#f55f5f'):(d>0?'#28d97a':'#f55f5f');
+        return `<div class="pt-row">
+          <div class="pt-year">${r.year}</div>
+          <div class="pt-bar-wrap"><div class="pt-bar" style="width:${pct}%;background:${color}"></div></div>
+          <div class="pt-value" style="color:${color}">${r.value}${unit?' '+unit:''}</div>
+          <div class="pt-delta">${d!==null?fmtDelta(d,unit):'<span class="change-flat">Base</span>'}</div>
+          <div style="font-size:10.5px;color:var(--text3);min-width:40px">${r.rank?'#'+r.rank:''}</div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('athtab-timeline').innerHTML=timelineHtml||`<p style="color:var(--text3)">No data.</p>`;
+
+  // History
+  const histRows=[...recs].sort((a,b)=>b.year-a.year);
+  document.getElementById('athtab-history').innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>Event</th><th>Year</th><th>Value</th><th>Unit</th><th>Rank</th><th>Venue</th><th>Notes</th></tr></thead>
+    <tbody>${histRows.map(r=>`<tr>
+      <td>${r.event}</td>
+      <td><span class="year-chip">${r.year}</span></td>
+      <td><strong>${r.value}</strong></td>
+      <td>${r.unit||'—'}</td>
+      <td>${r.rank?rankBadge(r.rank):'—'}</td>
+      <td style="color:var(--text2)">${r.venue||'—'}</td>
+      <td style="color:var(--text3)">${r.notes||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+
+  // Chart selector
+  const sel=document.getElementById('chart-ev-sel');
+  sel.innerHTML=evts.map(e=>`<option value="${e}">${e}</option>`).join('');
+
+  openModal('modal-ath');
+  switchAthTab('pb', document.querySelector('#modal-ath .tab-btn'));
+}
+
+function switchAthTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#modal-ath .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('athtab-'+tab).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(tab==='chart') setTimeout(buildAthChart,50);
+}
+
+function buildAthChart() {
+  const ev  = document.getElementById('chart-ev-sel').value;
+  const type= document.getElementById('chart-type-sel').value;
+  const recs=DB.filter(r=>r.athlete===curAthlete&&r.event===ev).sort((a,b)=>a.year-b.year);
+  if(chartInst.ath) chartInst.ath.destroy();
+  const vals=recs.map(r=>parseFloat(r.value)||0);
+  const unit=recs[0]?.unit||'';
+  chartInst.ath=new Chart(document.getElementById('ath-chart').getContext('2d'),{
+    type,
+    data:{labels:recs.map(r=>r.year),datasets:[{label:ev+' ('+unit+')',data:vals,
+      borderColor:'#f5b53f',backgroundColor:type==='line'?'rgba(245,181,63,0.08)':'rgba(245,181,63,0.4)',
+      fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:'#f5b53f',pointBorderColor:'#0d1120',pointBorderWidth:2,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} ${unit}`}}},
+      scales:{x:{ticks:{color:'#7d88a0',font:{size:12}},grid:{color:'rgba(255,255,255,0.04)'}},
+              y:{ticks:{color:'#7d88a0',font:{size:12}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:false}}}
+  });
+}
+
+// ─── YEAR COMPARE ───
+function initCompare() {
+  populateSelect('cmp-event',uniq('event'),document.getElementById('cmp-event').value,'Select event...');
+  populateSelect('cmp-y1',uniq('year'),document.getElementById('cmp-y1').value,'—');
+  populateSelect('cmp-y2',uniq('year'),document.getElementById('cmp-y2').value,'—');
+  renderCompare();
+}
+
+function renderCompare() {
+  const ev=document.getElementById('cmp-event').value;
+  const y1=document.getElementById('cmp-y1').value;
+  const y2=document.getElementById('cmp-y2').value;
+  const out=document.getElementById('compare-out');
+  if(!ev||!y1||!y2){out.innerHTML=`<div class="empty"><div class="empty-icon">↔️</div><h3>Select an event and two years</h3><p>Pick an event and two seasons to compare side by side.</p></div>`;document.getElementById('btn-dl-compare').style.display='none';return;}
+  if(y1===y2){out.innerHTML=`<div class="empty"><h3>Please pick two different years</h3></div>`;document.getElementById('btn-dl-compare').style.display='none';return;}
+
+  const r1=DB.filter(r=>r.event===ev&&String(r.year)===y1);
+  const r2=DB.filter(r=>r.event===ev&&String(r.year)===y2);
+  const allAths=[...new Set([...r1.map(r=>r.athlete),...r2.map(r=>r.athlete)])].sort();
+  const unit=(r1[0]||r2[0]||{}).unit||'';
+
+  const rows=allAths.map(a=>{
+    const v1=r1.find(r=>r.athlete===a), v2=r2.find(r=>r.athlete===a);
+    const fv1=v1?parseFloat(v1.value):null, fv2=v2?parseFloat(v2.value):null;
+    let d=null, diffHtml='—', better='—';
+    if(fv1!==null&&fv2!==null){
+      d=fv2-fv1;
+      const improved=lowerIsBetter(unit)?d<0:d>0;
+      diffHtml=fmtDelta(d,unit);
+      better=improved?`<span class="tag tag-green">${y2} ▲</span>`:`<span class="tag tag-amber">${y1} ▲</span>`;
+    }
+    return {a,v1,v2,fv1,fv2,d,diffHtml,better};
+  });
+
+  const improved=rows.filter(r=>r.d!==null&&(lowerIsBetter(unit)?r.d<0:r.d>0)).length;
+  const declined=rows.filter(r=>r.d!==null&&(lowerIsBetter(unit)?r.d>0:r.d<0)).length;
+  const both=rows.filter(r=>r.v1&&r.v2);
+
+  let html=`
+  <div class="cmp-summary-cards">
+    <div class="cmp-sum-card"><div class="cmp-sum-num" style="color:var(--green)">${improved}</div><div class="cmp-sum-lbl">Improved in ${y2}</div></div>
+    <div class="cmp-sum-card"><div class="cmp-sum-num" style="color:var(--red)">${declined}</div><div class="cmp-sum-lbl">Declined in ${y2}</div></div>
+    <div class="cmp-sum-card"><div class="cmp-sum-num" style="color:var(--text2)">${allAths.length}</div><div class="cmp-sum-lbl">Total Athletes</div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-header"><div class="card-title">${ev} — ${y1} vs ${y2}</div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Athlete</th><th>${y1}</th><th>${y2}</th><th>Δ Change</th><th>Best Season</th><th>${y1} Rank</th><th>${y2} Rank</th></tr></thead>
+      <tbody>${rows.map(({a,v1,v2,diffHtml,better})=>`<tr>
+        <td class="td-athlete" onclick="viewAthlete('${esc(a)}')">${a}</td>
+        <td>${v1?`<strong>${v1.value}</strong>${unit?' '+unit:''}`:'<span style="color:var(--text3)">—</span>'}</td>
+        <td>${v2?`<strong>${v2.value}</strong>${unit?' '+unit:''}`:'<span style="color:var(--text3)">—</span>'}</td>
+        <td>${diffHtml}</td>
+        <td>${better}</td>
+        <td>${v1&&v1.rank?rankBadge(v1.rank):'—'}</td>
+        <td>${v2&&v2.rank?rankBadge(v2.rank):'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+
+  if(both.length>0){
+    html+=`<div class="card"><div class="card-header"><div class="card-title">Visual Comparison — ${ev}</div></div>
+    <div style="position:relative;width:100%;height:${Math.max(200,both.length*50+60)}px">
+      <canvas id="cmp-canvas"></canvas>
+    </div></div>`;
+    out.innerHTML=html;
+    if(chartInst.cmp) chartInst.cmp.destroy();
+    chartInst.cmp=new Chart(document.getElementById('cmp-canvas').getContext('2d'),{
+      type:'bar',
+      data:{labels:both.map(r=>r.a),datasets:[
+        {label:y1,data:both.map(r=>r.fv1||0),backgroundColor:'rgba(75,139,245,0.7)',borderColor:'#4b8bf5',borderWidth:1,borderRadius:4},
+        {label:y2,data:both.map(r=>r.fv2||0),backgroundColor:'rgba(245,181,63,0.7)',borderColor:'#f5b53f',borderWidth:1,borderRadius:4}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+        plugins:{legend:{display:true,labels:{color:'#7d88a0',font:{size:11},boxWidth:10,padding:10}}},
+        scales:{x:{ticks:{color:'#7d88a0',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
+                y:{ticks:{color:'#eceef5',font:{size:11}},grid:{color:'rgba(255,255,255,0.03)'}}}}
+    });
+  } else { out.innerHTML=html; }
+  document.getElementById('btn-dl-compare').style.display='inline-flex';
+}
+
+// ─── TALLY & SEARCH ───
+function initTally() {
+  populateSelect('tly-event',uniq('event'),document.getElementById('tly-event').value,'All events');
+  populateSelect('tly-year', uniq('year'), document.getElementById('tly-year').value, 'All years');
+  document.getElementById('tly-q').oninput=renderTally;
+  renderTally();
+}
+
+function renderTally() {
+  const q =document.getElementById('tly-q').value.trim().toLowerCase();
+  const ev=document.getElementById('tly-event').value;
+  const yr=document.getElementById('tly-year').value;
+  const out=document.getElementById('tally-out');
+  if(!q&&!ev&&!yr){out.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><h3>Start searching</h3><p>Type a name or select filters to find cross-year data.</p></div>`;return;}
+
+  const rows=DB.filter(r=>
+    (!ev||r.event===ev)&&(!yr||String(r.year)===yr)&&
+    (!q||r.athlete.toLowerCase().includes(q)||r.event.toLowerCase().includes(q)||String(r.value).includes(q)||(r.venue||'').toLowerCase().includes(q))
+  );
+  if(!rows.length){out.innerHTML=`<div class="empty"><h3>No matches</h3><p>Try different search terms.</p></div>`;return;}
+
+  const byAth={};
+  rows.forEach(r=>{if(!byAth[r.athlete])byAth[r.athlete]=[];byAth[r.athlete].push(r);});
+
+  out.innerHTML=`<p style="font-size:11.5px;color:var(--text3);margin-bottom:12px">${rows.length} records across ${Object.keys(byAth).length} athlete${Object.keys(byAth).length!==1?'s':''}</p>`+
+  Object.entries(byAth).map(([ath,recs])=>{
+    const evMap2={};
+    recs.forEach(r=>{if(!evMap2[r.event])evMap2[r.event]=[];evMap2[r.event].push(r);});
+    const pbLine=Object.entries(evMap2).map(([ev2,ers])=>{
+      let best=ers[0]; ers.forEach(r=>{if(isBetter(r.value,best.value,r.unit))best=r;});
+      return `${ev2}: <strong>${best.value}${best.unit?' '+best.unit:''}</strong> <span class="year-chip">${best.year}</span>`;
+    }).join(' &nbsp;·&nbsp; ');
+    return `<div class="tally-result">
+      <div class="tally-result-header">
+        <div class="ath-avatar" style="width:36px;height:36px;font-size:12px;margin-bottom:0">${initials(ath)}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${ath}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${pbLine}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="viewAthlete('${esc(ath)}')">Full Profile →</button>
+      </div>
+      <div class="tally-result-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Event</th><th>Year</th><th>Value</th><th>Unit</th><th>Rank</th><th>Venue</th></tr></thead>
+          <tbody>${[...recs].sort((a,b)=>b.year-a.year).map(r=>`<tr>
+            <td>${r.event}</td>
+            <td><span class="year-chip">${r.year}</span></td>
+            <td><strong>${r.value}</strong></td>
+            <td>${r.unit||'—'}</td>
+            <td>${r.rank?rankBadge(r.rank):'—'}</td>
+            <td style="color:var(--text2)">${r.venue||'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── PARTICIPANT TALLY ───
+function renderParticipant() {
+  const q      = (document.getElementById('pt-search').value||'').toLowerCase();
+  const evFilt = document.getElementById('pt-event').value;
+  const sortby = document.getElementById('pt-sortby').value;
+  populateSelect('pt-event',uniq('event'),evFilt,'All events');
+
+  const out = document.getElementById('participant-out');
+  if(!DB.length){
+    out.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><h3>No participant data</h3><p>Upload participant files or load sample data to start.</p></div>`;
+    return;
+  }
+
+  let athletes=uniq('athlete').filter(a=>!q||a.toLowerCase().includes(q));
+  if(evFilt) athletes=athletes.filter(a=>DB.some(r=>r.athlete===a&&r.event===evFilt));
+
+  // Build participant records
+  const participants=athletes.map(name=>{
+    const recs=DB.filter(r=>r.athlete===name&&(!evFilt||r.event===evFilt));
+    const yrs=[...new Set(recs.map(r=>r.year))].sort((a,b)=>a-b);
+    const evts=[...new Set(recs.map(r=>r.event))];
+
+    // Improvement score
+    let totalImprove=0, totalCompared=0;
+    evts.forEach(ev=>{
+      const evRecs=recs.filter(r=>r.event===ev).sort((a,b)=>a.year-b.year);
+      for(let i=1;i<evRecs.length;i++){
+        const d=parseFloat(evRecs[i].value)-parseFloat(evRecs[i-1].value);
+        if(!isNaN(d)){
+          totalCompared++;
+          if(lowerIsBetter(evRecs[i].unit)?d<0:d>0) totalImprove++;
+        }
+      }
+    });
+
+    return {name,recs,yrs,evts,totalImprove,totalCompared,improveRate:totalCompared?Math.round(totalImprove/totalCompared*100):0};
+  });
+
+  // Sort
+  if(sortby==='improvement') participants.sort((a,b)=>b.improveRate-a.improveRate);
+  else if(sortby==='records') participants.sort((a,b)=>b.recs.length-a.recs.length);
+  else participants.sort((a,b)=>a.name.localeCompare(b.name));
+
+  if(!participants.length){
+    out.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><h3>No participants match</h3><p>Try different filters.</p></div>`;
+    return;
+  }
+
+  out.innerHTML=participants.map(({name,recs,yrs,evts,improveRate})=>{
+    const evMap={};
+    recs.forEach(r=>{if(!evMap[r.event])evMap[r.event]=[];evMap[r.event].push(r);});
+
+    // Event rows with year-by-year breakdown
+    const eventRows=Object.entries(evMap).map(([ev,ers])=>{
+      const sorted=[...ers].sort((a,b)=>a.year-b.year);
+      const unit=ers[0].unit||'';
+      let best=ers[0]; ers.forEach(r=>{if(isBetter(r.value,best.value,r.unit))best=r;});
+      const yearCells=yrs.map(yr=>{
+        const rec=sorted.find(r=>r.year===yr);
+        if(!rec) return `<td style="color:var(--text3);text-align:center">—</td>`;
+        const isPB=rec===best;
+        return `<td style="text-align:center;${isPB?'color:var(--cyan);font-weight:700;':''}">${rec.value}${rec.rank?` <span style="font-size:9px;color:var(--text3)">#${rec.rank}</span>`:''}${isPB?'<span class="pb-badge" style="margin-left:3px">PB</span>':''}</td>`;
+      });
+      // Delta between last two years
+      let trendCell='<td>—</td>';
+      if(sorted.length>=2){
+        const last=sorted[sorted.length-1], prev=sorted[sorted.length-2];
+        const d=parseFloat(last.value)-parseFloat(prev.value);
+        trendCell=`<td style="text-align:center">${isNaN(d)?'—':fmtDelta(d,unit)}</td>`;
+      }
+      return `<tr><td style="font-weight:600;color:var(--text2)">${ev}</td>${yearCells.join('')}${trendCell}<td style="text-align:center"><strong>${best.value} ${unit}</strong></td></tr>`;
+    }).join('');
+
+    const yearHeaders=yrs.map(y=>`<th style="text-align:center">${y}</th>`).join('');
+    const badgeColor=improveRate>=70?'var(--green)':improveRate>=40?'var(--amber)':'var(--red)';
+
+    return `<div class="tally-result" style="margin-bottom:14px">
+      <div class="tally-result-header">
+        <div class="ath-avatar" style="width:38px;height:38px;font-size:13px;margin-bottom:0">${initials(name)}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${name}</div>
+          <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
+            <span class="tag tag-blue">${recs.length} records</span>
+            <span class="tag tag-cyan">${evts.length} events</span>
+            ${yrs.map(y=>`<span class="year-chip">${y}</span>`).join('')}
+          </div>
+        </div>
+        <div style="text-align:center;min-width:70px">
+          <div style="font-family:var(--font-head);font-size:20px;font-weight:800;color:${badgeColor}">${improveRate}%</div>
+          <div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Improve Rate</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="viewAthlete('${esc(name)}')">Profile →</button>
+      </div>
+      <div class="tally-result-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Event</th>${yearHeaders}<th style="text-align:center">Δ Trend</th><th style="text-align:center">Personal Best</th></tr></thead>
+          <tbody>${eventRows}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── HELPERS ───
+function populateSelect(id, values, current, defaultLabel) {
+  const sel=document.getElementById(id);
+  const cur=current||sel.value;
+  sel.innerHTML=`<option value="">${defaultLabel}</option>`+values.map(v=>`<option value="${v}" ${String(v)===String(cur)?'selected':''}>${v}</option>`).join('');
+}
+
+// ─── DOWNLOAD ───
+function downloadCompare() {
+  const ev=document.getElementById('cmp-event').value;
+  const y1=document.getElementById('cmp-y1').value;
+  const y2=document.getElementById('cmp-y2').value;
+  if(!ev||!y1||!y2) return;
+  const r1=DB.filter(r=>r.event===ev&&String(r.year)===y1);
+  const r2=DB.filter(r=>r.event===ev&&String(r.year)===y2);
+  const allAths=[...new Set([...r1.map(r=>r.athlete),...r2.map(r=>r.athlete)])].sort();
+  const unit=(r1[0]||r2[0]||{}).unit||'';
+  const rows=allAths.map(a=>{
+    const v1=r1.find(r=>r.athlete===a), v2=r2.find(r=>r.athlete===a);
+    const fv1=v1?parseFloat(v1.value):null, fv2=v2?parseFloat(v2.value):null;
+    let delta='',betterSeason='—';
+    if(fv1!==null&&fv2!==null){
+      const d=fv2-fv1; delta=(d>0?'+':'')+d.toFixed(2);
+      const improved=lowerIsBetter(unit)?d<0:d>0;
+      betterSeason=improved?y2:y1;
+    }
+    return {Athlete:a,[`${y1} Value`]:v1?v1.value+(unit?' '+unit:''):'—',[`${y2} Value`]:v2?v2.value+(unit?' '+unit:''):'—','Δ Change':delta||'—','Better Season':betterSeason,[`${y1} Rank`]:v1?(v1.rank?'#'+v1.rank:'—'):'—',[`${y2} Rank`]:v2?(v2.rank?'#'+v2.rank:'—'):'—'};
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,`${ev} ${y1} vs ${y2}`.slice(0,31));
+  XLSX.writeFile(wb,`EventBase_Compare_${ev.replace(/\s+/g,'_')}_${y1}_vs_${y2}.xlsx`);
+}
+
+function downloadAllData() {
+  if(!DB.length){showNotif('No data to export.','error');return;}
+  const allRows=DB.map(r=>({Athlete:r.athlete,Event:r.event,EventType:r.eventType||'',Year:r.year,Value:r.value,Unit:r.unit||'',Rank:r.rank||'',Venue:r.venue||'',Notes:r.notes||''}));
+  const wsAll=XLSX.utils.json_to_sheet(allRows);
+
+  // Comparison summary
+  const cmpRows=[];
+  uniq('event').forEach(ev=>{
+    const evData=DB.filter(r=>r.event===ev);
+    [...new Set(evData.map(r=>r.athlete))].sort().forEach(ath=>{
+      const athData=evData.filter(r=>r.athlete===ath).sort((a,b)=>a.year-b.year);
+      for(let i=0;i<athData.length-1;i++){
+        const a=athData[i],b=athData[i+1];
+        const fA=parseFloat(a.value),fB=parseFloat(b.value);
+        const unit=a.unit||b.unit||'';
+        const delta=isNaN(fA)||isNaN(fB)?'—':((fB-fA>0?'+':'')+(fB-fA).toFixed(2));
+        const improved=isNaN(fA)||isNaN(fB)?'—':(lowerIsBetter(unit)?fB<fA:fB>fA)?'Yes':'No';
+        cmpRows.push({Athlete:ath,Event:ev,'Year A':a.year,'Value A':a.value+(unit?' '+unit:''),'Year B':b.year,'Value B':b.value+(unit?' '+unit:''),'Δ Change':delta,'Improved?':improved});
+      }
+    });
+  });
+
+  // PBs
+  const pbRows=[];
+  uniq('athlete').forEach(ath=>{
+    const athData=DB.filter(r=>r.athlete===ath);
+    const evMap={};
+    athData.forEach(r=>{if(!evMap[r.event])evMap[r.event]=[];evMap[r.event].push(r);});
+    Object.entries(evMap).forEach(([ev,ers])=>{
+      let best=ers[0]; ers.forEach(r=>{if(isBetter(r.value,best.value,r.unit))best=r;});
+      pbRows.push({Athlete:ath,Event:ev,'Best Value':best.value,Unit:best.unit||'',Year:best.year,Venue:best.venue||''});
+    });
+  });
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,wsAll,'All Records');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(cmpRows.length?cmpRows:[{Note:'Not enough data'}]),'Year Comparisons');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(pbRows.length?pbRows:[{Note:'No data'}]),'Personal Bests');
+  XLSX.writeFile(wb,`EventBase_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showNotif('✓ Exported: All Records, Year Comparisons, Personal Bests');
+}
+
+// ─── INDEXEDDB ───
+let idb = null;
+let EVENT_LOGOS = {}; // eventName → {dataURL, color}
+
+function openIDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('EventBaseDB', 2);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('records'))  db.createObjectStore('records',  { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('logos'))    db.createObjectStore('logos',    { keyPath: 'event' });
+    };
+    req.onsuccess = e => { idb = e.target.result; res(idb); };
+    req.onerror   = e => { console.warn('IDB error', e); rej(e); };
+  });
+}
+
+function idbGetAll(store) {
+  return new Promise((res, rej) => {
+    if (!idb) return res([]);
+    const tx = idb.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror   = () => res([]);
+  });
+}
+
+function idbPut(store, obj) {
+  return new Promise((res, rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction(store, 'readwrite');
+    tx.objectStore(store).put(obj);
+    tx.oncomplete = res;
+    tx.onerror = () => res();
+  });
+}
+
+function idbDelete(store, key) {
+  return new Promise((res) => {
+    if (!idb) return res();
+    const tx = idb.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(key);
+    tx.oncomplete = res;
+    tx.onerror = () => res();
+  });
+}
+
+function idbPutAll(store, items) {
+  return new Promise((res) => {
+    if (!idb || !items.length) return res();
+    const tx = idb.transaction(store, 'readwrite');
+    const os = tx.objectStore(store);
+    items.forEach(item => os.put(item));
+    tx.oncomplete = res;
+    tx.onerror = () => res();
+  });
+}
+
+async function saveDB() {
+  await idbPutAll('records', DB);
+}
+
+async function loadFromIDB() {
+  const records = await idbGetAll('records');
+  const logos   = await idbGetAll('logos');
+  if (records.length) {
+    DB = records;
+    updateSidebarCount();
+    renderDashboard();
+    showNotif(`✓ Loaded ${DB.length} records from database`, 'info');
+  } else {
+    loadSample();
+  }
+  logos.forEach(l => { EVENT_LOGOS[l.event] = { dataURL: l.dataURL, color: l.color }; });
+  updateLogoCount();
+  setDBStatus(true);
+}
+
+function setDBStatus(ok) {
+  const dot = document.getElementById('db-dot');
+  const txt = document.getElementById('db-status-text');
+  if (ok) {
+    dot.classList.remove('offline');
+    txt.textContent = 'DB Connected';
+  } else {
+    dot.classList.add('offline');
+    txt.textContent = 'DB Offline';
+  }
+}
+
+function updateLogoCount() {
+  const el = document.getElementById('nav-logo-count');
+  if (el) el.textContent = Object.keys(EVENT_LOGOS).length;
+}
+
+// ─── EVENT LOGOS ───
+let _logoSelectedColor = '#4f8ef8,#00e5c8';
+let _logoPendingData = null;
+
+function selectLogoColor(btn) {
+  document.querySelectorAll('.logo-color-opt').forEach(b => b.style.border = '2px solid transparent');
+  btn.style.border = '2px solid white';
+  _logoSelectedColor = btn.dataset.color;
+}
+
+function handleLogoFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showNotif('File too large — max 2MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _logoPendingData = ev.target.result;
+    const prev = document.getElementById('logo-preview-area');
+    prev.innerHTML = `<img src="${_logoPendingData}" style="max-height:120px;max-width:200px;border-radius:10px;object-fit:contain">
+      <p style="margin-top:8px;font-size:11px;color:var(--green)">✓ Ready to save</p>`;
+    document.getElementById('do-save-logo').style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+const logoDZ = document.getElementById('logo-drop-zone');
+logoDZ.addEventListener('dragover', e => { e.preventDefault(); logoDZ.classList.add('drag'); });
+logoDZ.addEventListener('dragleave', () => logoDZ.classList.remove('drag'));
+logoDZ.addEventListener('drop', e => {
+  e.preventDefault(); logoDZ.classList.remove('drag');
+  const f = e.dataTransfer.files[0]; if (f) { document.getElementById('logo-file-in').files; handleLogoFile({target:{files:[f]}}); }
+});
+
+async function saveLogo() {
+  const ev = document.getElementById('logo-event-sel').value;
+  if (!ev) { showNotif('Please select an event first', 'error'); return; }
+  if (!_logoPendingData) { showNotif('Please choose a logo image', 'error'); return; }
+  const logoObj = { event: ev, dataURL: _logoPendingData, color: _logoSelectedColor };
+  EVENT_LOGOS[ev] = { dataURL: _logoPendingData, color: _logoSelectedColor };
+  await idbPut('logos', logoObj);
+  updateLogoCount();
+  closeModal('modal-logo-upload');
+  _logoPendingData = null;
+  document.getElementById('logo-preview-area').innerHTML = `<div class="uz-icon">🖼️</div><h3>Click to choose logo image</h3><p>PNG, JPG, SVG, WebP · Max 2MB</p>`;
+  document.getElementById('do-save-logo').style.display = 'none';
+  document.getElementById('logo-file-in').value = '';
+  showNotif(`✓ Logo saved for "${ev}"!`);
+  renderBranding();
+}
+
+async function deleteLogo(ev) {
+  delete EVENT_LOGOS[ev];
+  await idbDelete('logos', ev);
+  updateLogoCount();
+  showNotif(`Logo removed for "${ev}"`);
+  renderBranding();
+}
+
+function getEventLogo(evName) {
+  return EVENT_LOGOS[evName] || null;
+}
+
+function eventLogoHTML(evName, size=40) {
+  const logo = getEventLogo(evName);
+  if (logo) {
+    return `<img src="${logo.dataURL}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:${Math.round(size*0.2)}px;vertical-align:middle">`;
+  }
+  // Fallback: colored emoji/initial badge
+  const colors = ['#4f8ef8,#00e5c8','#b06ef8,#ff5fb3','#ff7c3e,#ffb800','#00e676,#00c2b3','#ff4f6a,#ff7c3e'];
+  const hash = evName.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const grad = colors[hash % colors.length];
+  const [c1,c2] = grad.split(',');
+  const letter = (evName[0]||'E').toUpperCase();
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:${Math.round(size*0.2)}px;background:linear-gradient(135deg,${c1},${c2});font-size:${Math.round(size*0.4)}px;font-weight:800;color:#fff;font-family:var(--font-head);vertical-align:middle;flex-shrink:0">${letter}</span>`;
+}
+
+function renderBranding() {
+  // Populate event select in modal
+  const sel = document.getElementById('logo-event-sel');
+  const evts = uniq('event');
+  sel.innerHTML = '<option value="">— choose an event —</option>' + evts.map(e=>`<option value="${e}">${e}</option>`).join('');
+
+  const out = document.getElementById('branding-out');
+  if (!evts.length) {
+    out.innerHTML = `<div class="empty"><div class="empty-icon">🏅</div><h3>No events yet</h3><p>Add records first, then upload logos here.</p></div>`;
+    return;
+  }
+  out.innerHTML = evts.map(ev => {
+    const logo = getEventLogo(ev);
+    const types = [...new Set(DB.filter(r=>r.event===ev).map(r=>r.eventType||''))].filter(Boolean).join(', ');
+    const count = DB.filter(r=>r.event===ev).length;
+    const imgHTML = logo
+      ? `<div style="width:72px;height:72px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center">${eventLogoHTML(ev,72)}</div>`
+      : `<div class="event-logo-img">${eventLogoHTML(ev,56)}</div>`;
+    return `<div class="event-logo-card ${logo?'has-logo':''}" onclick="quickUploadLogo('${esc(ev)}')">
+      ${imgHTML}
+      <div class="event-logo-name">${ev}</div>
+      <div class="event-logo-type">${types||'Other'} · ${count} record${count!==1?'s':''}</div>
+      <div class="event-logo-actions" onclick="event.stopPropagation()">
+        ${logo
+          ? `<button class="btn btn-ghost btn-sm" onclick="quickUploadLogo('${esc(ev)}')">Change</button>
+             <button class="btn btn-danger btn-sm" onclick="deleteLogo('${esc(ev)}')">Remove</button>`
+          : `<button class="btn btn-primary btn-sm" onclick="quickUploadLogo('${esc(ev)}')">+ Logo</button>`
+        }
+      </div>
+      <div class="logo-upload-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>${logo?'Change':'Upload'} Logo</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function quickUploadLogo(evName) {
+  const sel = document.getElementById('logo-event-sel');
+  // Populate first
+  const evts = uniq('event');
+  sel.innerHTML = '<option value="">— choose an event —</option>' + evts.map(e=>`<option value="${e}" ${e===evName?'selected':''}>${e}</option>`).join('');
+  openModal('modal-logo-upload');
+}
+
+// ─── OVERRIDE saveRecord to persist to IDB ───
+const _origSaveRecord = saveRecord;
+
+// Patch doImport to also persist
+const _origDoImport = doImport;
+
+// ─── SAMPLE DATA ───
+function loadSample() {
+  DB=[
+    {id:uid(),athlete:'Arjun Mehta',event:'100m Sprint',eventType:'Track',year:2022,value:'10.82',unit:'sec',rank:'2',venue:'Nehru Stadium',notes:''},
+    {id:uid(),athlete:'Arjun Mehta',event:'100m Sprint',eventType:'Track',year:2023,value:'10.65',unit:'sec',rank:'1',venue:'Barasat Ground',notes:'Personal best'},
+    {id:uid(),athlete:'Arjun Mehta',event:'100m Sprint',eventType:'Track',year:2024,value:'10.59',unit:'sec',rank:'1',venue:'Salt Lake Stadium',notes:'District record'},
+    {id:uid(),athlete:'Arjun Mehta',event:'Long Jump',eventType:'Field',year:2023,value:'7.12',unit:'m',rank:'3',venue:'Nehru Stadium',notes:''},
+    {id:uid(),athlete:'Arjun Mehta',event:'Long Jump',eventType:'Field',year:2024,value:'7.28',unit:'m',rank:'2',venue:'Salt Lake Stadium',notes:''},
+    {id:uid(),athlete:'Priya Das',event:'100m Sprint',eventType:'Track',year:2022,value:'11.92',unit:'sec',rank:'1',venue:'Nehru Stadium',notes:''},
+    {id:uid(),athlete:'Priya Das',event:'100m Sprint',eventType:'Track',year:2023,value:'11.74',unit:'sec',rank:'1',venue:'Barasat Ground',notes:''},
+    {id:uid(),athlete:'Priya Das',event:'100m Sprint',eventType:'Track',year:2024,value:'11.68',unit:'sec',rank:'1',venue:'Salt Lake Stadium',notes:'Season record'},
+    {id:uid(),athlete:'Priya Das',event:'200m Sprint',eventType:'Track',year:2023,value:'24.31',unit:'sec',rank:'2',venue:'Salt Lake Stadium',notes:''},
+    {id:uid(),athlete:'Priya Das',event:'200m Sprint',eventType:'Track',year:2024,value:'24.11',unit:'sec',rank:'1',venue:'Burdwan',notes:''},
+    {id:uid(),athlete:'Ravi Kumar',event:'Shot Put',eventType:'Field',year:2022,value:'14.20',unit:'m',rank:'1',venue:'Burdwan',notes:''},
+    {id:uid(),athlete:'Ravi Kumar',event:'Shot Put',eventType:'Field',year:2023,value:'14.85',unit:'m',rank:'1',venue:'Asansol',notes:''},
+    {id:uid(),athlete:'Ravi Kumar',event:'Shot Put',eventType:'Field',year:2024,value:'15.10',unit:'m',rank:'1',venue:'Salt Lake Stadium',notes:'Season best'},
+    {id:uid(),athlete:'Souvik Bose',event:'Long Jump',eventType:'Field',year:2022,value:'6.88',unit:'m',rank:'2',venue:'Burdwan',notes:''},
+    {id:uid(),athlete:'Souvik Bose',event:'Long Jump',eventType:'Field',year:2023,value:'6.95',unit:'m',rank:'2',venue:'Nehru Stadium',notes:''},
+    {id:uid(),athlete:'Souvik Bose',event:'Long Jump',eventType:'Field',year:2024,value:'7.05',unit:'m',rank:'1',venue:'Salt Lake Stadium',notes:''},
+    {id:uid(),athlete:'Meghna Roy',event:'400m',eventType:'Track',year:2023,value:'58.42',unit:'sec',rank:'3',venue:'Asansol',notes:''},
+    {id:uid(),athlete:'Meghna Roy',event:'400m',eventType:'Track',year:2024,value:'57.88',unit:'sec',rank:'2',venue:'Salt Lake Stadium',notes:'PB'},
+    {id:uid(),athlete:'Debashis Pal',event:'Shot Put',eventType:'Field',year:2022,value:'13.55',unit:'m',rank:'2',venue:'Burdwan',notes:''},
+    {id:uid(),athlete:'Debashis Pal',event:'Shot Put',eventType:'Field',year:2023,value:'13.90',unit:'m',rank:'2',venue:'Asansol',notes:''},
+    {id:uid(),athlete:'Debashis Pal',event:'Shot Put',eventType:'Field',year:2024,value:'13.75',unit:'m',rank:'3',venue:'Salt Lake Stadium',notes:''},
+  ];
+  updateSidebarCount();
+  idbPutAll('records', DB);
+  renderDashboard();
+}
+
+// ─── CLEAR ALL DATA ───
+async function clearAllData() {
+  if (!confirm('This will delete ALL records and logos from the database. Are you sure?')) return;
+  if (!confirm('Are you really sure? This cannot be undone.')) return;
+  if (idb) {
+    await new Promise(res => {
+      const tx = idb.transaction(['records','logos'], 'readwrite');
+      tx.objectStore('records').clear();
+      tx.objectStore('logos').clear();
+      tx.oncomplete = res;
+    });
+  }
+  DB = [];
+  EVENT_LOGOS = {};
+  updateSidebarCount();
+  updateLogoCount();
+  renderDashboard();
+  showNotif('All data cleared.', 'error');
+}
+
+// ─── INIT ───
+setDBStatus(false);
+openIDB().then(() => {
+  loadFromIDB();
+}).catch(() => {
+  setDBStatus(false);
+  loadSample();
+});
+</script>
+</body>
+</html>
